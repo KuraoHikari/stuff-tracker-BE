@@ -25,6 +25,8 @@ export class AuthService {
   ) {}
 
   async validateUser(request: LoginUserRequest): Promise<ValidateUserResponse> {
+    this.logger.info(`Validating user: ${request.email}`);
+
     const user = await this.prismaService.user.findUnique({
       where: { email: request.email },
     });
@@ -36,6 +38,7 @@ export class AuthService {
   }
 
   async jwtSign(request: JwtSignRequest): Promise<LoginResponse> {
+    this.logger.info(`Signing JWT for user: ${request.email}`);
     const payload = { email: request.email, sub: request.id };
     return {
       access_token: this.jwtService.sign(payload),
@@ -67,5 +70,21 @@ export class AuthService {
       email: user.email,
       name: user.name,
     };
+  }
+
+  async updateProfile(
+    id: string,
+    request: Omit<UserResponse, 'email'>,
+  ): Promise<UserResponse> {
+    this.logger.info(`Updating user profile: ${id}`);
+
+    const user = await this.prismaService.user.update({
+      where: { id },
+      data: request,
+    });
+
+    const { password, ...result } = user;
+
+    return result;
   }
 }

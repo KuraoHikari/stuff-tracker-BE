@@ -3,9 +3,10 @@ import { CommonModule } from './common/common.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './common/prisma.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
-  imports: [CommonModule, UserModule, AuthModule, PrismaModule],
+  imports: [CommonModule, UserModule, AuthModule, PrismaModule, LocationModule],
   controllers: [],
   providers: [],
 })

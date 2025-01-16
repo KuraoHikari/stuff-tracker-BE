@@ -25,13 +25,13 @@ model Item {
   id          String        @id @default(cuid())
   name        String
   description String?
-  category    Category      @relation(fields: [categoryId], references: [id])
-  categoryId  String
+  category    Category?     @relation(fields: [categoryId], references: [id])
+  categoryId  String?
   image       String? // URL untuk gambar item
-  condition   Condition     @relation(fields: [conditionId], references: [id])
-  conditionId String
-  status      Status        @relation(fields: [statusId], references: [id])
-  statusId    String
+  condition   Condition?    @relation(fields: [conditionId], references: [id])
+  conditionId String?
+  status      Status?       @relation(fields: [statusId], references: [id])
+  statusId    String?
   location    Location?     @relation(fields: [locationId], references: [id])
   locationId  String?
   history     ItemHistory[]

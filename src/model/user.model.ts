@@ -40,3 +40,9 @@ export interface LoginResponse {
 export interface UserRequest extends Request {
   user: BaseUser & { id: string };
 }
+
+export type UserProfile = {
+  id: string;
+  email: string;
+  name?: string;
+};
