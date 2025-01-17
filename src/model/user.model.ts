@@ -38,7 +38,7 @@ export interface LoginResponse {
 }
 
 export interface UserRequest extends Request {
-  user: BaseUser & { id: string };
+  user: BaseUser & { userId: string };
 }
 
 export type UserProfile = {

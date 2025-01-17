@@ -17,14 +17,20 @@ model User {
   conditions Condition[]
   statuses   Status[]
   actions    Action[]
+  categories Category[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 }
 
 model Item {
-  id          String        @id @default(cuid())
-  name        String
-  description String?
+  id             String    @id @default(cuid())
+  name           String
+  description    String?
+  purchasePrice  Float?
+  sellPrice      Float?
+  estimatedValue Float?
+  purchaseDate   DateTime?
+
   category    Category?     @relation(fields: [categoryId], references: [id])
   categoryId  String?
   image       String? // URL untuk gambar item
@@ -55,9 +61,15 @@ model Location {
 }
 
 model Category {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  items     Item[]
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  items Item[]
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -73,31 +85,34 @@ model ItemHistory {
 }
 
 model Condition {
-  id        String   @id @default(cuid())
-  name      String   @unique // Nama kondisi (contoh: Baru, Bekas)
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  items     Item[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Status {
-  id        String   @id @default(cuid())
-  name      String   @unique // Nama status (contoh: Tersedia, Dipinjam)
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  items     Item[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Action {
-  id        String        @id @default(cuid())
-  name      String        @unique // Nama aksi (contoh: Dipindahkan, Diperbarui)
-  user      User          @relation(fields: [userId], references: [id])
-  userId    String
-  histories ItemHistory[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String
+  histories   ItemHistory[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }

@@ -52,7 +52,11 @@ export class AuthController {
   @Get('profile')
   @HttpCode(HttpStatus.OK)
   getProfile(@Request() req: UserRequest): UserProfile {
-    return req.user; // Mengembalikan data user dari JWT
+    return {
+      id: req.user.userId,
+      email: req.user.email,
+      name: req.user.name,
+    }; // Mengembalikan data user dari JWT
   }
 
   @UseGuards(JwtAuthGuard)
@@ -62,7 +66,10 @@ export class AuthController {
     @Request() req: UserRequest,
     @Body() request: Omit<UserProfile, 'id' | 'email'>, // Menghilangkan field id dari UserProfile,
   ): Promise<WebResponse<UserResponse>> {
-    const result = await this.authService.updateProfile(req.user.id, request);
+    const result = await this.authService.updateProfile(
+      req.user.userId,
+      request,
+    );
     return {
       data: result,
     };

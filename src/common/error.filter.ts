@@ -11,13 +11,14 @@ import { ZodError } from 'zod';
 export class ErrorFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse();
-    console.log('🚀 ~ ErrorFilter ~ response:', response);
+    // console.log('🚀 ~ ErrorFilter ~ response:', response);
 
     if (exception instanceof HttpException) {
       response.status(exception.getStatus()).json({
         error: exception.getResponse(),
       });
     } else if (exception instanceof ZodError) {
+      console.log('🚀 ~ ErrorFilter ~ exception:', exception.errors);
       response.status(400).json({
         errors: 'Validation error',
       });
