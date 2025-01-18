@@ -141,6 +141,16 @@ export class LocationService {
     }
 
     try {
+      // Check if location is used
+      const items = await this.prismaService.item.findMany({
+        where: {
+          locationId: locationId,
+        },
+      });
+      if (items.length > 0) {
+        throw new BadRequestException('Location is being used');
+      }
+
       // Delete location
       await this.prismaService.location.delete({ where: { id: locationId } });
     } catch (error) {

@@ -132,6 +132,14 @@ export class StatusService {
     }
 
     try {
+      //check if status is in use
+      const items = await this.prismaService.item.findMany({
+        where: { statusId: statusId },
+      });
+      if (items.length > 0) {
+        throw new UnauthorizedException('Status is in use');
+      }
+
       await this.prismaService.status.delete({ where: { id: statusId } });
     } catch (error) {
       this.logger.error('Error deleting status', error);

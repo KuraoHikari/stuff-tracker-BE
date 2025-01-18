@@ -132,6 +132,16 @@ export class CategoryService {
     }
 
     try {
+      //check if there are items with this category
+      const items = await this.prismaService.item.findMany({
+        where: {
+          categoryId: categoryId,
+        },
+      });
+      if (items.length > 0) {
+        throw new UnauthorizedException('Category is in use');
+      }
+
       await this.prismaService.category.delete({ where: { id: categoryId } });
     } catch (error) {
       this.logger.error('Error deleting category', error);

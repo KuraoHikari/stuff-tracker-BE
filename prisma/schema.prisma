@@ -31,6 +31,8 @@ model Item {
   estimatedValue Float?
   purchaseDate   DateTime?
 
+  expiredDate DateTime?
+
   category    Category?     @relation(fields: [categoryId], references: [id])
   categoryId  String?
   image       String? // URL untuk gambar item

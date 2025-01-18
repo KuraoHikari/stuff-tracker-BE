@@ -133,6 +133,17 @@ export class ConditionService {
     }
 
     try {
+      //check if the condition is being used by any item
+      const items = await this.prismaService.item.findMany({
+        where: {
+          conditionId: conditionId,
+        },
+      });
+
+      if (items.length > 0) {
+        throw new UnauthorizedException('Condition is being used by an item');
+      }
+
       await this.prismaService.condition.delete({ where: { id: conditionId } });
     } catch (error) {
       this.logger.error('Error deleting condition', error);

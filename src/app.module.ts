@@ -4,14 +4,11 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './common/prisma.module';
 import { LocationModule } from './location/location.module';
-import { CategoryController } from './category/category.controller';
 import { CategoryModule } from './category/category.module';
-import { ConditionController } from './condition/condition.controller';
 import { ConditionModule } from './condition/condition.module';
-import { StatusService } from './status/status.service';
 import { StatusModule } from './status/status.module';
-import { ActionController } from './action/action.controller';
 import { ActionModule } from './action/action.module';
+import { ItemModule } from './item/item.module';
 
 @Module({
   imports: [
@@ -24,6 +21,7 @@ import { ActionModule } from './action/action.module';
     ConditionModule,
     StatusModule,
     ActionModule,
+    ItemModule,
   ],
   controllers: [],
   providers: [],
