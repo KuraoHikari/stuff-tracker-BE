@@ -9,6 +9,13 @@ async function bootstrap() {
 
   app.useLogger(logger);
 
+  // Enable CORS with multiple origins
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://example2.com'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   await app.listen(3000);
 }
 bootstrap();
