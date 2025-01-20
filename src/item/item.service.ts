@@ -38,75 +38,78 @@ export class ItemService {
       request,
     );
 
-    try {
-      // Check if the category, condition, location, and status exist concurrently
-      const [category, condition, location, status] = await Promise.all([
-        createItemRequest.categoryId
-          ? this.prismaService.category.findUnique({
-              where: { id: createItemRequest.categoryId },
-            })
-          : null,
-        createItemRequest.conditionId
-          ? this.prismaService.condition.findUnique({
-              where: { id: createItemRequest.conditionId },
-            })
-          : null,
-        createItemRequest.locationId
-          ? this.prismaService.location.findUnique({
-              where: { id: createItemRequest.locationId },
-            })
-          : null,
-        createItemRequest.statusId
-          ? this.prismaService.status.findUnique({
-              where: { id: createItemRequest.statusId },
-            })
-          : null,
-      ]);
+    // Check if the category, condition, location, and status exist concurrently
+    const [category, condition, location, status] = await Promise.all([
+      createItemRequest.categoryId
+        ? this.prismaService.category.findUnique({
+            where: { id: createItemRequest.categoryId },
+          })
+        : null,
+      createItemRequest.conditionId
+        ? this.prismaService.condition.findUnique({
+            where: { id: createItemRequest.conditionId },
+          })
+        : null,
+      createItemRequest.locationId
+        ? this.prismaService.location.findUnique({
+            where: { id: createItemRequest.locationId },
+          })
+        : null,
+      createItemRequest.statusId
+        ? this.prismaService.status.findUnique({
+            where: { id: createItemRequest.statusId },
+          })
+        : null,
+    ]);
 
-      if (createItemRequest.categoryId && !category) {
-        throw new NotFoundException('Category not found');
-      }
-      if (createItemRequest.conditionId && !condition) {
-        throw new NotFoundException('Condition not found');
-      }
-      if (createItemRequest.locationId && !location) {
-        throw new NotFoundException('Location not found');
-      }
-      if (createItemRequest.statusId && !status) {
-        throw new NotFoundException('Status not found');
-      }
-
-      const item = await this.prismaService.item.create({
-        data: {
-          ...createItemRequest,
-          ownerId: userId,
-        },
-      });
-
-      return {
-        ...item,
-      };
-    } catch (error) {
-      this.logger.error('Error creating item', error);
-      throw new InternalServerErrorException('Error creating item');
+    if (createItemRequest.categoryId && !category) {
+      throw new NotFoundException('Category not found');
     }
+    if (createItemRequest.conditionId && !condition) {
+      throw new NotFoundException('Condition not found');
+    }
+    if (createItemRequest.locationId && !location) {
+      throw new NotFoundException('Location not found');
+    }
+    if (createItemRequest.statusId && !status) {
+      throw new NotFoundException('Status not found');
+    }
+
+    const item = await this.prismaService.item.create({
+      data: {
+        ...createItemRequest,
+        ownerId: userId,
+      },
+    });
+
+    return {
+      ...item,
+    };
   }
 
   async getItems(userId: string): Promise<ItemListResponse> {
     this.logger.info('Fetching all items');
-    try {
-      const items = await this.prismaService.item.findMany({
-        where: {
-          ownerId: userId,
-        },
-      });
-      return {
-        items: [...items],
-      };
-    } catch (error) {
-      this.logger.error('Error fetching items', error);
-      throw new InternalServerErrorException('Error fetching items');
-    }
+
+    const items = await this.prismaService.item.findMany({
+      where: {
+        ownerId: userId,
+      },
+      include: {
+        category: true,
+        condition: true,
+        location: true,
+        status: true,
+      },
+    });
+    return {
+      items: items.map((item) => ({
+        ...item,
+        category: item.category?.name,
+        condition: item.condition?.name,
+        location: item.location?.name,
+        status: item.status?.name,
+      })),
+    };
   }
 
   async getItem(itemId: string): Promise<ItemDetailResponse> {
@@ -138,56 +141,58 @@ export class ItemService {
     const dataUpdate =
       this.validationService.filterUndefinedValues(updateItemRequest);
 
-    try {
-      // Check if the category, condition, location, and status exist concurrently
-      const [category, condition, location, status] = await Promise.all([
-        dataUpdate.categoryId
-          ? this.prismaService.category.findUnique({
-              where: { id: dataUpdate.categoryId },
-            })
-          : null,
-        dataUpdate.conditionId
-          ? this.prismaService.condition.findUnique({
-              where: { id: dataUpdate.conditionId },
-            })
-          : null,
-        dataUpdate.locationId
-          ? this.prismaService.location.findUnique({
-              where: { id: dataUpdate.locationId },
-            })
-          : null,
-        dataUpdate.statusId
-          ? this.prismaService.status.findUnique({
-              where: { id: dataUpdate.statusId },
-            })
-          : null,
-      ]);
-
-      if (dataUpdate.categoryId && !category) {
-        throw new NotFoundException('Category not found');
-      }
-      if (dataUpdate.conditionId && !condition) {
-        throw new NotFoundException('Condition not found');
-      }
-      if (dataUpdate.locationId && !location) {
-        throw new NotFoundException('Location not found');
-      }
-      if (dataUpdate.statusId && !status) {
-        throw new NotFoundException('Status not found');
-      }
-
-      const item = await this.prismaService.item.update({
-        where: { id: itemId, ownerId: userId },
-        data: dataUpdate,
-      });
-
-      return {
-        ...item,
-      };
-    } catch (error) {
-      this.logger.error('Error updating item', error);
-      throw new InternalServerErrorException('Error updating item');
+    const itemIsExit = await this.prismaService.item.findUnique({
+      where: { id: itemId },
+    });
+    if (!itemIsExit) {
+      throw new NotFoundException('Item not found');
     }
+
+    // Check if the category, condition, location, and status exist concurrently
+    const [category, condition, location, status] = await Promise.all([
+      dataUpdate.categoryId
+        ? this.prismaService.category.findUnique({
+            where: { id: dataUpdate.categoryId },
+          })
+        : null,
+      dataUpdate.conditionId
+        ? this.prismaService.condition.findUnique({
+            where: { id: dataUpdate.conditionId },
+          })
+        : null,
+      dataUpdate.locationId
+        ? this.prismaService.location.findUnique({
+            where: { id: dataUpdate.locationId },
+          })
+        : null,
+      dataUpdate.statusId
+        ? this.prismaService.status.findUnique({
+            where: { id: dataUpdate.statusId },
+          })
+        : null,
+    ]);
+
+    if (dataUpdate.categoryId && !category) {
+      throw new NotFoundException('Category not found');
+    }
+    if (dataUpdate.conditionId && !condition) {
+      throw new NotFoundException('Condition not found');
+    }
+    if (dataUpdate.locationId && !location) {
+      throw new NotFoundException('Location not found');
+    }
+    if (dataUpdate.statusId && !status) {
+      throw new NotFoundException('Status not found');
+    }
+
+    const item = await this.prismaService.item.update({
+      where: { id: itemId, ownerId: userId },
+      data: dataUpdate,
+    });
+
+    return {
+      ...item,
+    };
   }
 
   async deleteItem(userId: string, itemId: string): Promise<void> {
@@ -204,11 +209,6 @@ export class ItemService {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    try {
-      await this.prismaService.item.delete({ where: { id: itemId } });
-    } catch (error) {
-      this.logger.error('Error deleting item', error);
-      throw new InternalServerErrorException('Error deleting item');
-    }
+    await this.prismaService.item.delete({ where: { id: itemId } });
   }
 }

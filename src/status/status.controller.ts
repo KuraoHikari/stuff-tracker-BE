@@ -24,7 +24,7 @@ import {
   StatusListResponse,
 } from '../model/status.model';
 
-@Controller('/api/statuses')
+@Controller('/api/status')
 export class StatusController {
   constructor(private statusService: StatusService) {}
 
