@@ -22,6 +22,7 @@ import {
   ItemResponse,
   ItemDetailResponse,
   ItemListResponse,
+  ItemEditResponse,
 } from '../model/item.model';
 
 @Controller('/api/items')
@@ -73,7 +74,7 @@ export class ItemController {
     @Request() req: UserRequest,
     @Param('id') itemId: string,
     @Body() request: UpdateItemRequest,
-  ): Promise<WebResponse<ItemResponse>> {
+  ): Promise<WebResponse<ItemEditResponse>> {
     const result = await this.itemService.updateItem(
       req.user.userId,
       itemId,

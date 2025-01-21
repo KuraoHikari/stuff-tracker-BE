@@ -17,6 +17,7 @@ import {
   ItemResponse,
   ItemDetailResponse,
   ItemListResponse,
+  ItemEditResponse,
 } from '../model/item.model';
 
 @Injectable()
@@ -130,7 +131,7 @@ export class ItemService {
     userId: string,
     itemId: string,
     request: UpdateItemRequest,
-  ): Promise<ItemResponse> {
+  ): Promise<ItemEditResponse> {
     this.logger.info(`Updating item with id: ${itemId}`);
 
     const updateItemRequest = this.validationService.validate(
@@ -188,10 +189,20 @@ export class ItemService {
     const item = await this.prismaService.item.update({
       where: { id: itemId, ownerId: userId },
       data: dataUpdate,
+      include: {
+        category: true,
+        condition: true,
+        location: true,
+        status: true,
+      },
     });
 
     return {
       ...item,
+      category: item.category?.name,
+      condition: item.condition?.name,
+      location: item.location?.name,
+      status: item.status?.name,
     };
   }
 

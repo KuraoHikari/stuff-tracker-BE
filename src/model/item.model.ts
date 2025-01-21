@@ -49,3 +49,10 @@ export interface ItemDetailResponse extends ItemResponse {}
 export interface ItemListResponse {
   items: ItemResponse[];
 }
+
+export interface ItemEditResponse extends ItemResponse {
+  category: string;
+  condition: string;
+  location: string;
+  status: string;
+}
