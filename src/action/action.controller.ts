@@ -22,7 +22,7 @@ import {
   ActionResponse,
   ActionDetailResponse,
   ActionListResponse,
-} from 'src/model/action.model';
+} from '../model/action.model';
 
 @Controller('/api/actions')
 export class ActionController {

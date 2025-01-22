@@ -4,8 +4,8 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 
-import { PrismaModule } from 'src/common/prisma.module';
-import { JwtStrategy } from 'src/common/jwt.strategy';
+import { PrismaModule } from '../common/prisma.module';
+import { JwtStrategy } from '../common/jwt.strategy';
 // Untuk mengakses database
 
 @Module({

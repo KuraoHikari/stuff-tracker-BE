@@ -3,7 +3,6 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
-  BadRequestException,
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common';
@@ -91,23 +90,18 @@ export class AuthService {
       10,
     );
 
-    try {
-      const user = await this.prismaService.user.create({
-        data: {
-          email: registerUserRequest.email,
-          name: registerUserRequest.name,
-          password: registerUserRequest.password,
-        },
-      });
+    const user = await this.prismaService.user.create({
+      data: {
+        email: registerUserRequest.email,
+        name: registerUserRequest.name,
+        password: registerUserRequest.password,
+      },
+    });
 
-      return {
-        email: user.email,
-        name: user.name,
-      };
-    } catch (error) {
-      this.logger.error('Error registering user', error);
-      throw new InternalServerErrorException('Error registering user');
-    }
+    return {
+      email: user.email,
+      name: user.name,
+    };
   }
 
   async updateProfile(
@@ -129,20 +123,15 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    try {
-      const updatedUser = await this.prismaService.user.update({
-        where: { id },
-        data: {
-          name: updateProfileRequest.name,
-        },
-      });
+    const updatedUser = await this.prismaService.user.update({
+      where: { id },
+      data: {
+        name: updateProfileRequest.name,
+      },
+    });
 
-      const { password, ...result } = updatedUser;
+    const { password, ...result } = updatedUser;
 
-      return result;
-    } catch (error) {
-      this.logger.error('Error updating user profile', error);
-      throw new InternalServerErrorException('Error updating user profile');
-    }
+    return result;
   }
 }

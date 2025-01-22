@@ -8,7 +8,7 @@ import {
 import { ValidationService } from '../common/validation.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PrismaService } from 'src/common/prisma.service';
+import { PrismaService } from '../common/prisma.service';
 
 import { ActionValidation } from './action.validation';
 import {
@@ -17,7 +17,7 @@ import {
   ActionResponse,
   ActionDetailResponse,
   ActionListResponse,
-} from 'src/model/action.model';
+} from '../model/action.model';
 
 @Injectable()
 export class ActionService {

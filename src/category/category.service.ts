@@ -8,7 +8,7 @@ import {
 import { ValidationService } from '../common/validation.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PrismaService } from 'src/common/prisma.service';
+import { PrismaService } from '../common/prisma.service';
 import {
   CreateCategoryRequest,
   UpdateCategoryRequest,
@@ -37,39 +37,30 @@ export class CategoryService {
       request,
     );
 
-    try {
-      const category = await this.prismaService.category.create({
-        data: {
-          name: createCategoryRequest.name,
-          description: createCategoryRequest.description,
-          userId: userId,
-        },
-      });
+    const category = await this.prismaService.category.create({
+      data: {
+        name: createCategoryRequest.name,
+        description: createCategoryRequest.description,
+        userId: userId,
+      },
+    });
 
-      return {
-        ...category,
-      };
-    } catch (error) {
-      this.logger.error('Error creating category', error);
-      throw new InternalServerErrorException('Error creating category');
-    }
+    return {
+      ...category,
+    };
   }
 
   async getCategories(userId: string): Promise<CategoryListResponse> {
     this.logger.info('Fetching all categories');
-    try {
-      const categories = await this.prismaService.category.findMany({
-        where: {
-          userId: userId,
-        },
-      });
-      return {
-        categories: [...categories],
-      };
-    } catch (error) {
-      this.logger.error('Error fetching categories', error);
-      throw new InternalServerErrorException('Error fetching categories');
-    }
+
+    const categories = await this.prismaService.category.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return {
+      categories: [...categories],
+    };
   }
 
   async getCategory(categoryId: string): Promise<CategoryDetailResponse> {
@@ -102,19 +93,22 @@ export class CategoryService {
       updateCategoryRequest,
     );
 
-    try {
-      const category = await this.prismaService.category.update({
-        where: { id: categoryId, userId: userId },
-        data: dataUpdate,
-      });
-
-      return {
-        ...category,
-      };
-    } catch (error) {
-      this.logger.error('Error updating category', error);
-      throw new InternalServerErrorException('Error updating category');
+    //check if category exists
+    const categoryIsExit = await this.prismaService.category.findUnique({
+      where: { id: categoryId },
+    });
+    if (!categoryIsExit) {
+      throw new NotFoundException('Category not found');
     }
+
+    const category = await this.prismaService.category.update({
+      where: { id: categoryId, userId: userId },
+      data: dataUpdate,
+    });
+
+    return {
+      ...category,
+    };
   }
 
   async deleteCategory(userId: string, categoryId: string): Promise<void> {
@@ -131,21 +125,16 @@ export class CategoryService {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    try {
-      //check if there are items with this category
-      const items = await this.prismaService.item.findMany({
-        where: {
-          categoryId: categoryId,
-        },
-      });
-      if (items.length > 0) {
-        throw new UnauthorizedException('Category is in use');
-      }
-
-      await this.prismaService.category.delete({ where: { id: categoryId } });
-    } catch (error) {
-      this.logger.error('Error deleting category', error);
-      throw new InternalServerErrorException('Error deleting category');
+    //check if there are items with this category
+    const items = await this.prismaService.item.findMany({
+      where: {
+        categoryId: categoryId,
+      },
+    });
+    if (items.length > 0) {
+      throw new UnauthorizedException('Category is in use');
     }
+
+    await this.prismaService.category.delete({ where: { id: categoryId } });
   }
 }
