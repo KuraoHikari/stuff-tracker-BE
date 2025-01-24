@@ -32,8 +32,6 @@ export class LocationService {
     userId: string,
     request: CreateLocationRequest,
   ): Promise<LocationResponse> {
-    console.log('🚀 ~ LocationService ~ userId:', userId);
-    console.log('🚀 ~ LocationService ~ request:', request);
     this.logger.info('Creating a new location');
 
     // Validate request
@@ -42,40 +40,30 @@ export class LocationService {
       request,
     );
 
-    try {
-      // Create a new location
-      const location = await this.prismaService.location.create({
-        data: {
-          ...createLocationRequest,
-          userId: userId,
-        },
-      });
+    // Create a new location
+    const location = await this.prismaService.location.create({
+      data: {
+        ...createLocationRequest,
+        userId: userId,
+      },
+    });
 
-      return {
-        ...location,
-      };
-    } catch (error) {
-      console.log('🚀 ~ LocationService ~ error:', error.message);
-      this.logger.error('Error creating location', error.message);
-      throw new InternalServerErrorException('Error creating location');
-    }
+    return {
+      ...location,
+    };
   }
 
   async getLocations(userId: string): Promise<LocationListResponse> {
     this.logger.info('Fetching all locations');
-    try {
-      const locations = await this.prismaService.location.findMany({
-        where: {
-          userId: userId,
-        },
-      });
-      return {
-        locations: [...locations],
-      };
-    } catch (error) {
-      this.logger.error('Error fetching locations', error);
-      throw new InternalServerErrorException('Error fetching locations');
-    }
+
+    const locations = await this.prismaService.location.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return {
+      locations: [...locations],
+    };
   }
 
   async getLocation(locationId: string): Promise<LocationDetailResponse> {
@@ -88,7 +76,7 @@ export class LocationService {
     }
 
     return {
-      location: location,
+      ...location,
     };
   }
 
@@ -110,19 +98,21 @@ export class LocationService {
       updateLocationRequest,
     );
 
-    try {
-      const location = await this.prismaService.location.update({
-        where: { id: locationId, userId: userId },
-        data: dataUpdate,
-      });
-
-      return {
-        ...location,
-      };
-    } catch (error) {
-      this.logger.error('Error updating location', error);
-      throw new InternalServerErrorException('Error updating location');
+    const isLocationExit = await this.prismaService.location.findUnique({
+      where: { id: locationId },
+    });
+    if (!isLocationExit) {
+      throw new NotFoundException('Location not found');
     }
+
+    const location = await this.prismaService.location.update({
+      where: { id: locationId, userId: userId },
+      data: dataUpdate,
+    });
+
+    return {
+      ...location,
+    };
   }
 
   async deleteLocation(userId: string, locationId: string): Promise<void> {
@@ -140,22 +130,17 @@ export class LocationService {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    try {
-      // Check if location is used
-      const items = await this.prismaService.item.findMany({
-        where: {
-          locationId: locationId,
-        },
-      });
-      if (items.length > 0) {
-        throw new BadRequestException('Location is being used');
-      }
-
-      // Delete location
-      await this.prismaService.location.delete({ where: { id: locationId } });
-    } catch (error) {
-      this.logger.error('Error deleting location', error);
-      throw new InternalServerErrorException('Error deleting location');
+    // Check if location is used
+    const items = await this.prismaService.item.findMany({
+      where: {
+        locationId: locationId,
+      },
+    });
+    if (items.length > 0) {
+      throw new BadRequestException('Location is being used');
     }
+
+    // Delete location
+    await this.prismaService.location.delete({ where: { id: locationId } });
   }
 }

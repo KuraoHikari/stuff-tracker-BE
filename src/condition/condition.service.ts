@@ -38,39 +38,30 @@ export class ConditionService {
       request,
     );
 
-    try {
-      const condition = await this.prismaService.condition.create({
-        data: {
-          name: createConditionRequest.name,
-          description: createConditionRequest.description,
-          userId: userId,
-        },
-      });
+    const condition = await this.prismaService.condition.create({
+      data: {
+        name: createConditionRequest.name,
+        description: createConditionRequest.description,
+        userId: userId,
+      },
+    });
 
-      return {
-        ...condition,
-      };
-    } catch (error) {
-      this.logger.error('Error creating condition', error);
-      throw new InternalServerErrorException('Error creating condition');
-    }
+    return {
+      ...condition,
+    };
   }
 
   async getConditions(userId: string): Promise<ConditionListResponse> {
     this.logger.info('Fetching all conditions');
-    try {
-      const conditions = await this.prismaService.condition.findMany({
-        where: {
-          userId: userId,
-        },
-      });
-      return {
-        conditions: [...conditions],
-      };
-    } catch (error) {
-      this.logger.error('Error fetching conditions', error);
-      throw new InternalServerErrorException('Error fetching conditions');
-    }
+
+    const conditions = await this.prismaService.condition.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return {
+      conditions: [...conditions],
+    };
   }
 
   async getCondition(conditionId: string): Promise<ConditionDetailResponse> {
@@ -103,19 +94,21 @@ export class ConditionService {
       updateConditionRequest,
     );
 
-    try {
-      const condition = await this.prismaService.condition.update({
-        where: { id: conditionId, userId: userId },
-        data: dataUpdate,
-      });
-
-      return {
-        ...condition,
-      };
-    } catch (error) {
-      this.logger.error('Error updating condition', error);
-      throw new InternalServerErrorException('Error updating condition');
+    const isConditionExit = await this.prismaService.condition.findUnique({
+      where: { id: conditionId },
+    });
+    if (!isConditionExit) {
+      throw new NotFoundException('Condition not found');
     }
+
+    const condition = await this.prismaService.condition.update({
+      where: { id: conditionId, userId: userId },
+      data: dataUpdate,
+    });
+
+    return {
+      ...condition,
+    };
   }
 
   async deleteCondition(userId: string, conditionId: string): Promise<void> {
@@ -132,22 +125,17 @@ export class ConditionService {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    try {
-      //check if the condition is being used by any item
-      const items = await this.prismaService.item.findMany({
-        where: {
-          conditionId: conditionId,
-        },
-      });
+    //check if the condition is being used by any item
+    const items = await this.prismaService.item.findMany({
+      where: {
+        conditionId: conditionId,
+      },
+    });
 
-      if (items.length > 0) {
-        throw new UnauthorizedException('Condition is being used by an item');
-      }
-
-      await this.prismaService.condition.delete({ where: { id: conditionId } });
-    } catch (error) {
-      this.logger.error('Error deleting condition', error);
-      throw new InternalServerErrorException('Error deleting condition');
+    if (items.length > 0) {
+      throw new UnauthorizedException('Condition is being used by an item');
     }
+
+    await this.prismaService.condition.delete({ where: { id: conditionId } });
   }
 }

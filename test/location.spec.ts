@@ -7,7 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TestService } from './test.service';
 import { TestModule } from './test.module';
 
-describe('Category Controller', () => {
+describe('Location Controller', () => {
   let app: INestApplication;
   let logger: Logger;
   let testService: TestService;
@@ -24,12 +24,13 @@ describe('Category Controller', () => {
     testService = app.get(TestService);
   });
 
-  describe('test /api/categories', () => {
+  describe('test /api/locations', () => {
     //login before all tests
     let loginResponse: any;
 
     beforeEach(async () => {
       await testService.cleanDb();
+
       await testService.deleteUser();
       await testService.createUser();
       const response = await request(app.getHttpServer())
@@ -44,9 +45,7 @@ describe('Category Controller', () => {
 
     //reject if user is not authenticated
     it('shoud be rejected if user is not authenticated', async () => {
-      const response = await request(app.getHttpServer()).get(
-        '/api/categories',
-      );
+      const response = await request(app.getHttpServer()).get('/api/locations');
 
       logger.info(response.body);
 
@@ -56,11 +55,11 @@ describe('Category Controller', () => {
 
     it('shoud be rejected if request is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: '',
-          description: '',
+          address: '',
         });
 
       logger.info(response.body);
@@ -69,65 +68,65 @@ describe('Category Controller', () => {
       expect(response.body.errors).toBeDefined();
     });
 
-    it('shoud be able to create a category', async () => {
+    it('shoud be able to create a location', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
-          description: 'test description',
+          address: 'test address',
         });
 
       logger.info(response.body);
 
       expect(response.status).toBe(201);
       expect(response.body.data.name).toBe('test name');
-      expect(response.body.data.description).toBe('test description');
+      expect(response.body.data.address).toBe('test address');
     });
 
-    it('shoud be able to get all categories', async () => {
+    it('shoud be able to get all locations', async () => {
       await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
-          description: 'test description',
+          address: 'test address',
         });
 
       const response = await request(app.getHttpServer())
-        .get('/api/categories')
+        .get('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);
 
       expect(response.status).toBe(200);
-      expect(response.body.data.categories.length).toBe(1);
+      expect(response.body.data.locations.length).toBe(1);
     });
 
-    it('shoud be able to get a category', async () => {
-      //get the category id
+    it('shoud be able to get a locations', async () => {
+      //get the location id
       const createResponse = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
-          description: 'test description',
+          address: 'test address',
         });
 
       const response = await request(app.getHttpServer())
-        .get(`/api/categories/${createResponse.body.data.id}`)
+        .get(`/api/locations/${createResponse.body.data.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body.data.name).toBe('test name');
-      expect(response.body.data.description).toBe('test description');
+      expect(response.body.data.address).toBe('test address');
     });
 
-    it('shoud be rejected if category is not found', async () => {
+    it('shoud be rejected if location is not found', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/categories/123')
+        .get('/api/locations/123')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);
@@ -136,38 +135,38 @@ describe('Category Controller', () => {
       expect(response.body.error).toBeDefined();
     });
 
-    it('shoud be able to update a category', async () => {
-      //get the category id
+    it('shoud be able to update a location', async () => {
+      //get the location id
       const createResponse = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
-          description: 'test description',
+          address: 'test address',
         });
 
       const response = await request(app.getHttpServer())
-        .put(`/api/categories/${createResponse.body.data.id}`)
+        .put(`/api/locations/${createResponse.body.data.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name updated',
-          description: 'test description updated',
+          address: 'test address updated',
         });
 
       logger.info(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body.data.name).toBe('test name updated');
-      expect(response.body.data.description).toBe('test description updated');
+      expect(response.body.data.address).toBe('test address updated');
     });
 
-    it('shoud be rejected if category is not found', async () => {
+    it('shoud be rejected if location is not found', async () => {
       const response = await request(app.getHttpServer())
-        .put('/api/categories/123')
+        .put('/api/locations/123')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name updated',
-          description: 'test description updated',
+          address: 'test address updated',
         });
 
       logger.info(response.body);
@@ -176,18 +175,18 @@ describe('Category Controller', () => {
       expect(response.body.error).toBeDefined();
     });
 
-    it('shoud be able to delete a category', async () => {
-      //get the category id
+    it('shoud be able to delete a location', async () => {
+      //get the location id
       const createResponse = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/locations')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
-          description: 'test description',
+          address: 'test address',
         });
 
       const response = await request(app.getHttpServer())
-        .delete(`/api/categories/${createResponse.body.data.id}`)
+        .delete(`/api/locations/${createResponse.body.data.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);

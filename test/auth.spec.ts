@@ -12,7 +12,7 @@ describe('Auth Controller', () => {
   let logger: Logger;
   let testService: TestService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule, TestModule],
     }).compile();
@@ -26,7 +26,7 @@ describe('Auth Controller', () => {
 
   describe('test /api/auth', () => {
     beforeEach(async () => {
-      await testService.deleteAllCategories();
+      await testService.cleanDb();
       await testService.deleteUser();
     });
 

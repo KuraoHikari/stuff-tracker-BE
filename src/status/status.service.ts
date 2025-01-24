@@ -38,39 +38,30 @@ export class StatusService {
       request,
     );
 
-    try {
-      const status = await this.prismaService.status.create({
-        data: {
-          name: createStatusRequest.name,
-          description: createStatusRequest.description,
-          userId: userId,
-        },
-      });
+    const status = await this.prismaService.status.create({
+      data: {
+        name: createStatusRequest.name,
+        description: createStatusRequest.description,
+        userId: userId,
+      },
+    });
 
-      return {
-        ...status,
-      };
-    } catch (error) {
-      this.logger.error('Error creating status', error);
-      throw new InternalServerErrorException('Error creating status');
-    }
+    return {
+      ...status,
+    };
   }
 
   async getStatuses(userId: string): Promise<StatusListResponse> {
     this.logger.info('Fetching all statuses');
-    try {
-      const statuses = await this.prismaService.status.findMany({
-        where: {
-          userId: userId,
-        },
-      });
-      return {
-        statuses: [...statuses],
-      };
-    } catch (error) {
-      this.logger.error('Error fetching statuses', error);
-      throw new InternalServerErrorException('Error fetching statuses');
-    }
+
+    const statuses = await this.prismaService.status.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+    return {
+      statuses: [...statuses],
+    };
   }
 
   async getStatus(statusId: string): Promise<StatusDetailResponse> {
@@ -102,19 +93,21 @@ export class StatusService {
     const dataUpdate =
       this.validationService.filterUndefinedValues(updateStatusRequest);
 
-    try {
-      const status = await this.prismaService.status.update({
-        where: { id: statusId, userId: userId },
-        data: dataUpdate,
-      });
-
-      return {
-        ...status,
-      };
-    } catch (error) {
-      this.logger.error('Error updating status', error);
-      throw new InternalServerErrorException('Error updating status');
+    const statusIsExit = await this.prismaService.status.findUnique({
+      where: { id: statusId },
+    });
+    if (!statusIsExit) {
+      throw new NotFoundException('Status not found');
     }
+
+    const status = await this.prismaService.status.update({
+      where: { id: statusId, userId: userId },
+      data: dataUpdate,
+    });
+
+    return {
+      ...status,
+    };
   }
 
   async deleteStatus(userId: string, statusId: string): Promise<void> {
@@ -131,19 +124,14 @@ export class StatusService {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    try {
-      //check if status is in use
-      const items = await this.prismaService.item.findMany({
-        where: { statusId: statusId },
-      });
-      if (items.length > 0) {
-        throw new UnauthorizedException('Status is in use');
-      }
-
-      await this.prismaService.status.delete({ where: { id: statusId } });
-    } catch (error) {
-      this.logger.error('Error deleting status', error);
-      throw new InternalServerErrorException('Error deleting status');
+    //check if status is in use
+    const items = await this.prismaService.item.findMany({
+      where: { statusId: statusId },
+    });
+    if (items.length > 0) {
+      throw new UnauthorizedException('Status is in use');
     }
+
+    await this.prismaService.status.delete({ where: { id: statusId } });
   }
 }

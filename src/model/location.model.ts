@@ -21,9 +21,7 @@ export interface LocationListResponse {
   locations: LocationResponse[];
 }
 
-export interface LocationDetailResponse {
-  location: LocationResponse;
-}
+export interface LocationDetailResponse {}
 
 export interface CreateLocationRequest extends BaseLocation {}
 

@@ -7,7 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TestService } from './test.service';
 import { TestModule } from './test.module';
 
-describe('Category Controller', () => {
+describe('Condition Controller', () => {
   let app: INestApplication;
   let logger: Logger;
   let testService: TestService;
@@ -24,12 +24,13 @@ describe('Category Controller', () => {
     testService = app.get(TestService);
   });
 
-  describe('test /api/categories', () => {
+  describe('test /api/conditions', () => {
     //login before all tests
     let loginResponse: any;
 
     beforeEach(async () => {
       await testService.cleanDb();
+
       await testService.deleteUser();
       await testService.createUser();
       const response = await request(app.getHttpServer())
@@ -45,7 +46,7 @@ describe('Category Controller', () => {
     //reject if user is not authenticated
     it('shoud be rejected if user is not authenticated', async () => {
       const response = await request(app.getHttpServer()).get(
-        '/api/categories',
+        '/api/conditions',
       );
 
       logger.info(response.body);
@@ -56,7 +57,7 @@ describe('Category Controller', () => {
 
     it('shoud be rejected if request is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: '',
@@ -69,9 +70,9 @@ describe('Category Controller', () => {
       expect(response.body.errors).toBeDefined();
     });
 
-    it('shoud be able to create a category', async () => {
+    it('shoud be able to create a condition', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
@@ -85,9 +86,9 @@ describe('Category Controller', () => {
       expect(response.body.data.description).toBe('test description');
     });
 
-    it('shoud be able to get all categories', async () => {
+    it('shoud be able to get all conditions', async () => {
       await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
@@ -95,19 +96,19 @@ describe('Category Controller', () => {
         });
 
       const response = await request(app.getHttpServer())
-        .get('/api/categories')
+        .get('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);
 
       expect(response.status).toBe(200);
-      expect(response.body.data.categories.length).toBe(1);
+      expect(response.body.data.conditions.length).toBe(1);
     });
 
-    it('shoud be able to get a category', async () => {
-      //get the category id
+    it('shoud be able to get a condition', async () => {
+      //get the condition id
       const createResponse = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
@@ -115,7 +116,7 @@ describe('Category Controller', () => {
         });
 
       const response = await request(app.getHttpServer())
-        .get(`/api/categories/${createResponse.body.data.id}`)
+        .get(`/api/conditions/${createResponse.body.data.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);
@@ -125,9 +126,9 @@ describe('Category Controller', () => {
       expect(response.body.data.description).toBe('test description');
     });
 
-    it('shoud be rejected if category is not found', async () => {
+    it('shoud be rejected if condition is not found', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/categories/123')
+        .get('/api/conditions/123')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);
@@ -136,10 +137,10 @@ describe('Category Controller', () => {
       expect(response.body.error).toBeDefined();
     });
 
-    it('shoud be able to update a category', async () => {
-      //get the category id
+    it('shoud be able to update a condition', async () => {
+      //get the condition id
       const createResponse = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
@@ -147,7 +148,7 @@ describe('Category Controller', () => {
         });
 
       const response = await request(app.getHttpServer())
-        .put(`/api/categories/${createResponse.body.data.id}`)
+        .put(`/api/conditions/${createResponse.body.data.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name updated',
@@ -161,9 +162,9 @@ describe('Category Controller', () => {
       expect(response.body.data.description).toBe('test description updated');
     });
 
-    it('shoud be rejected if category is not found', async () => {
+    it('shoud be rejected if condition is not found', async () => {
       const response = await request(app.getHttpServer())
-        .put('/api/categories/123')
+        .put('/api/conditions/123')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name updated',
@@ -176,10 +177,10 @@ describe('Category Controller', () => {
       expect(response.body.error).toBeDefined();
     });
 
-    it('shoud be able to delete a category', async () => {
-      //get the category id
+    it('shoud be able to delete a condition', async () => {
+      //get the condition id
       const createResponse = await request(app.getHttpServer())
-        .post('/api/categories')
+        .post('/api/conditions')
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`)
         .send({
           name: 'test name',
@@ -187,7 +188,7 @@ describe('Category Controller', () => {
         });
 
       const response = await request(app.getHttpServer())
-        .delete(`/api/categories/${createResponse.body.data.id}`)
+        .delete(`/api/conditions/${createResponse.body.data.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.data.access_token}`);
 
       logger.info(response.body);

@@ -8,6 +8,21 @@ import * as bcrypt from 'bcrypt';
 export class TestService {
   constructor(private prismaService: PrismaService) {}
 
+  async cleanDb() {
+    await this.deleteAllCategories();
+    await this.deleteAllStatuses();
+    await this.deleteAllLocations();
+    await this.deleteAllConditions();
+    await this.deleteAllItems();
+  }
+
+  async createConditionLocationCategoryStatus(userId: string) {
+    await this.createCategory(userId);
+    await this.createStatus(userId);
+    await this.createCondition(userId);
+    await this.createLocation(userId);
+  }
+
   async deleteUser() {
     await this.prismaService.user.deleteMany({
       where: {
@@ -43,13 +58,83 @@ export class TestService {
     });
   }
 
+  async deleteAllStatuses() {
+    await this.prismaService.status.deleteMany({
+      where: {
+        name: {
+          contains: 'test name',
+        },
+      },
+    });
+  }
+
+  async deleteAllLocations() {
+    await this.prismaService.location.deleteMany({
+      where: {
+        name: {
+          contains: 'test name',
+        },
+      },
+    });
+  }
+
+  async deleteAllConditions() {
+    await this.prismaService.condition.deleteMany({
+      where: {
+        name: {
+          contains: 'test name',
+        },
+      },
+    });
+  }
+
+  async deleteAllItems() {
+    await this.prismaService.item.deleteMany({
+      where: {
+        name: {
+          contains: 'test name',
+        },
+      },
+    });
+  }
+
   async createLocation(userId: string): Promise<Location> {
     return this.prismaService.location.create({
       data: {
-        name: 'Warehouse',
-        address: '123 Warehouse St',
+        name: 'test name',
+        address: 'test address',
         latitude: 40.7128,
         longitude: -74.006,
+        userId: userId,
+      },
+    });
+  }
+
+  async createCategory(userId: string) {
+    return this.prismaService.category.create({
+      data: {
+        name: 'test name',
+        description: 'test description',
+        userId: userId,
+      },
+    });
+  }
+
+  async createStatus(userId: string) {
+    return this.prismaService.status.create({
+      data: {
+        name: 'test name',
+        description: 'test description',
+        userId: userId,
+      },
+    });
+  }
+
+  async createCondition(userId: string) {
+    return this.prismaService.condition.create({
+      data: {
+        name: 'test name',
+        description: 'test description',
         userId: userId,
       },
     });
