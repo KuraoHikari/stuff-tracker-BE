@@ -29,6 +29,7 @@ import {
   ItemDetailResponse,
   ItemListResponse,
   ItemEditResponse,
+  ItemCreateResponse,
 } from '../model/item.model';
 
 // Define the ItemService as an injectable service
@@ -45,7 +46,7 @@ export class ItemService {
   async createItem(
     userId: string,
     request: CreateItemRequest,
-  ): Promise<ItemResponse> {
+  ): Promise<ItemCreateResponse> {
     this.logger.info('Creating a new item');
 
     // Validate the create item request
@@ -98,11 +99,21 @@ export class ItemService {
         ...createItemRequest,
         ownerId: userId,
       },
+      include: {
+        category: true,
+        condition: true,
+        location: true,
+        status: true,
+      },
     });
 
     // Return the created item
     return {
       ...item,
+      category: item.category?.name, // Include only the category name
+      condition: item.condition?.name, // Include only the condition name
+      location: item.location?.name, // Include only the location name
+      status: item.status?.name, // Include only the
     };
   }
 

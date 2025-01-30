@@ -62,3 +62,10 @@ export interface ItemEditResponse extends ItemResponse {
   location: string; // Location name of the item
   status: string; // Status name of the item
 }
+
+export interface ItemCreateResponse extends ItemResponse {
+  category: string; // Category name of the item
+  condition: string; // Condition name of the item
+  location: string; // Location name of the item
+  status: string; // Status name of the item
+}
